@@ -1,0 +1,13 @@
+version: "3"
+services:
+    data-ws:
+        environment:
+            - SPRING_PROFILES=
+            - DB_CONN_SERVER=192.168.66.27
+            - DB_CONN_PORT=5432
+            - DB_CONN_DATABASE=telemed_core_data_db
+            - DB_CONN_SCHEMA=telemed_core_data
+            - DB_CONN_USERNAME=telemed_core_data_readonly
+            - DB_CONN_PASSWORD=uO12zFFF01
+            - TRIF_REST_URL=http://192.168.66.29:8080
+            - MEASUREMENT_SERVER_URL=http://192.168.66.35:3001

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgresql-kie
+  name: postgresql-kie
+spec:
+  ports:
+  - name: "5432"
+    port: 5432
+    targetPort: 5432
+  selector:
+    io.kompose.service: postgresql-kie
+status:
+  loadBalancer: {}

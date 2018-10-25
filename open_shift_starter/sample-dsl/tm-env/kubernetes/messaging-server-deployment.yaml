@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: messaging-server
+  name: messaging-server
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: messaging-server
+    spec:
+      containers:
+      - env:
+        - name: MESSAGE_STORE_CONN_URL
+          value: '"jdbc:postgresql://postgresql-messaging:5433/messaging"'
+        - name: MESSAGE_STORE_DRIVER_CLASS
+          value: org.postgresql.Driver
+        - name: MESSAGE_STORE_JPA_DB_TYPE
+          value: POSTGRESQL
+        - name: MESSAGE_STORE_PASSWORD
+          value: M3ss4g1ngUser
+        - name: MESSAGE_STORE_USERNAME
+          value: messaging
+        - name: SMTP_HOST
+          value: smtp.gmail.com
+        - name: SMTP_PASSWORD
+          value: TMTeszt12345
+        - name: SMTP_PORT
+          value: "587"
+        - name: SMTP_STARTTLS_ENABLE
+          value: "true"
+        - name: SMTP_USER
+          value: telemedica-teszt
+        - name: SPRING_PROFILES
+          value: message-store-enabled,email-store-enabled,dummy-store-enabled,post-store-enabled
+        image: development.corvex.hu:5020/cvx-messaging-server:9
+        name: messaging-server
+        ports:
+        - containerPort: 8080
+        resources: {}
+      restartPolicy: Always
+status: {}

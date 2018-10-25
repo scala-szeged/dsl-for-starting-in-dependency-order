@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kie-server
+  name: kie-server
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: kie-server
+    spec:
+      containers:
+      - env:
+        - name: DOCKER_IP
+          value: kie-server
+        - name: DOCKER_PORT
+          value: "8180"
+        - name: JAVA_OPTS
+          value: -Xms256m -Xmx1024m -Djava.net.preferIPv4Stack=true -Dorg.quartz.properties=/opt/jboss/wildfly/standalone/configuration/quartz-definition.properties
+        - name: KIE_CONTEXT_PATH
+          value: kie-server
+        - name: KIE_SERVER_CONTROLLER_PWD
+          value: admin
+        - name: KIE_SERVER_CONTROLLER_USER
+          value: admin
+        - name: KIE_SERVER_ID
+          value: tm-kie-server
+        - name: KIE_WB_ENV_KIE_CONTEXT_PATH
+          value: jbpm-console
+        - name: KIE_WB_PORT_8080_TCP
+          value: jbpm-workbench
+        - name: KIE_WB_PORT_8080_TCP_ADDR
+          value: jbpm-workbench
+        - name: TM_KIE_DATABASE_HOST
+          value: postgresql-kie
+        - name: TZ
+          value: Europe/Budapest
+        image: development.corvex.hu:5020/tm-kie-server:7
+        name: kie-server
+        ports:
+        - containerPort: 8080
+        resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,0 +1,43 @@
+version: "3"
+services:
+    kie-server:
+        environment:
+            - JAVA_OPTS=-Xms256m -Xmx1024m -Djava.net.preferIPv4Stack=true -Dorg.quartz.properties=/opt/jboss/wildfly/standalone/configuration/quartz-definition.properties
+            - TZ=Europe/Budapest
+            - TM_KIE_DATABASE_HOST=postgresql-kie
+            - KIE_SERVER_ID=tm-kie-server
+            - DOCKER_IP=kie-server
+            - DOCKER_PORT=8180
+            - KIE_CONTEXT_PATH=kie-server
+            - KIE_WB_PORT_8080_TCP_ADDR=jbpm-workbench
+            - KIE_WB_ENV_KIE_CONTEXT_PATH=jbpm-console
+            - KIE_SERVER_CONTROLLER_USER=admin
+            - KIE_SERVER_CONTROLLER_PWD=admin
+            - KIE_WB_PORT_8080_TCP=jbpm-workbench
+    messaging-server:
+        environment:
+            - SMTP_HOST=smtp.gmail.com
+            - SMTP_PORT=587
+            - SMTP_USER=telemedica-teszt
+            - SMTP_PASSWORD=TMTeszt12345
+            - SMTP_STARTTLS_ENABLE=true
+            - SPRING_PROFILES=message-store-enabled,email-store-enabled,dummy-store-enabled,post-store-enabled
+            - MESSAGE_STORE_DRIVER_CLASS=org.postgresql.Driver
+            - MESSAGE_STORE_CONN_URL="jdbc:postgresql://postgresql-messaging:5433/messaging"
+            - MESSAGE_STORE_USERNAME=messaging
+            - MESSAGE_STORE_PASSWORD=M3ss4g1ngUser
+            - MESSAGE_STORE_JPA_DB_TYPE=POSTGRESQL
+    workflow-api:
+        environment:
+            - JDK_ENV_VARS=-Dkie.rest.host=kie-server -Dkie.rest.port=8180
+
+volumes:
+    gitdata:
+        labels:
+            storageClassName: glusterfs-storage
+    kie-pgdata:
+        labels:
+            storageClassName: glusterfs-storage
+    messaging-pgdata:
+        labels:
+            storageClassName: glusterfs-storage

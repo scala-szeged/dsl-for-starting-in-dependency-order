@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: data-ws
+  name: data-ws
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: data-ws
+    spec:
+      containers:
+      - env:
+        - name: SPRING_PROFILES
+          value: data-ws-mock
+        image: development.corvex.hu:5020/tm-data-ws:10
+        name: data-ws
+        ports:
+        - containerPort: 8080
+        resources: {}
+      restartPolicy: Always
+status: {}

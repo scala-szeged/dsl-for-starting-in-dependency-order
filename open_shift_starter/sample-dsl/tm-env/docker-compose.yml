@@ -1,0 +1,141 @@
+version: "3"
+services:
+    jbpm-workbench:
+        image: development.corvex.hu:5020/tm-jbpm-workbench:3
+        container_name: kie-wb
+        ports:
+            - "8080:8080"
+            - "8001:8001"
+        depends_on:
+            - messaging-server
+        networks:
+            default:
+                aliases:
+                    - jbpm-workbench
+                    - kie-wb
+        volumes:
+            - "gitdata:/opt/jboss/wildfly/git"
+        environment:
+            - TZ=Europe/Budapest
+    kie-server:
+        image: development.corvex.hu:5020/tm-kie-server:7
+        container_name: kie-server
+        ports:
+            - "8180:8080"
+        depends_on:
+            - jbpm-workbench
+            - messaging-server
+            - postgresql-kie
+            - data-ws
+        links:
+            - jbpm-workbench:kie-wb
+            - messaging-server:messaging-server
+            - postgresql-kie:postgresql
+            - data-ws:data-ws
+        networks:
+            default:
+                aliases:
+                    - kie-server
+        environment:
+            - JAVA_OPTS=-Xms256m -Xmx1024m -Djava.net.preferIPv4Stack=true -Dorg.quartz.properties=/opt/jboss/wildfly/standalone/configuration/quartz-definition.properties
+            - TZ=Europe/Budapest
+            - TM_KIE_DATABASE_HOST=postgresql-kie
+            - KIE_SERVER_ID=tm-kie-server
+            - DOCKER_IP=kie-server
+            - DOCKER_PORT=8080
+            - KIE_CONTEXT_PATH=kie-server
+            - KIE_WB_PORT_8080_TCP_ADDR=jbpm-workbench
+            - KIE_WB_ENV_KIE_CONTEXT_PATH=jbpm-console
+            - KIE_SERVER_CONTROLLER_USER=admin
+            - KIE_SERVER_CONTROLLER_PWD=admin
+            - KIE_WB_PORT_8080_TCP=jbpm-workbench
+    messaging-server:
+        image: development.corvex.hu:5020/cvx-messaging-server:9
+        container_name: messaging-server
+        ports:
+            - "8280:8080"
+        networks:
+            default:
+                aliases:
+                    - messaging-server
+        depends_on:
+            - postgresql-messaging
+        links:
+            - postgresql-messaging:postgresql-messaging
+        environment:
+            - SMTP_HOST=smtp.gmail.com
+            - SMTP_PORT=587
+            - SMTP_USER=telemedica-teszt
+            - SMTP_PASSWORD=TMTeszt12345
+            - SMTP_STARTTLS_ENABLE=true
+            - SPRING_PROFILES=message-store-enabled,email-store-enabled,dummy-store-enabled,post-store-enabled
+            - MESSAGE_STORE_DRIVER_CLASS=org.postgresql.Driver
+            - MESSAGE_STORE_CONN_URL="jdbc:postgresql://postgresql-messaging:5432/messaging"
+            - MESSAGE_STORE_USERNAME=messaging
+            - MESSAGE_STORE_PASSWORD=M3ss4g1ngUser
+            - MESSAGE_STORE_JPA_DB_TYPE=POSTGRESQL
+    postgresql-kie:
+        image: development.corvex.hu:5020/tm-postgresql-kie:1
+        container_name: postgresql-kie
+        ports:
+            - "5432:5432"
+        networks:
+            default:
+                aliases:
+                    - postgresql-kie
+                    - postgresql
+        volumes:
+            - "kie-pgdata:/var/lib/postgresql/data"
+        environment:
+            - POSTGRESQL_USER=kieserver
+            - POSTGRESQL_PASSWORD=K1eS3rv3rUserPass
+            - POSTGRESQL_DATABASE=kieserver
+    postgresql-messaging:
+        image: centos/postgresql-96-centos7:9.6
+        container_name: postgresql-messaging
+        ports:
+            - "5433:5432"
+        networks:
+            default:
+                aliases:
+                    - postgresql-messaging
+        volumes:
+            - "messaging-pgdata:/var/lib/postgresql/data"
+        environment:
+            - POSTGRESQL_USER=messaging
+            - POSTGRESQL_PASSWORD=M3ss4g1ngUser
+            - POSTGRESQL_DATABASE=messaging
+    workflow-api:
+        image: development.corvex.hu:5020/cvx-workflow-api:10
+        container_name: workflow-api
+        ports:
+            - "8380:8080"
+        networks:
+            default:
+                aliases:
+                    - workflow-api
+        depends_on:
+            - kie-server
+        environment:
+            - JDK_ENV_VARS=-Dkie.rest.host=kie-server -Dkie.rest.port=8080
+        links:
+            - kie-server:kie-server
+    data-ws:
+        image: development.corvex.hu:5020/tm-data-ws:11
+        container_name: data-ws
+        ports:
+            - "8480:8080"
+        networks:
+            default:
+                aliases:
+                    - data-ws
+        environment:
+            - SPRING_PROFILES=data-ws-mock
+
+volumes:
+    gitdata:
+    kie-pgdata:
+    messaging-pgdata:
+
+networks:
+    default:

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: workflow-api
+  name: workflow-api
+spec:
+  ports:
+  - name: "8380"
+    port: 8380
+    targetPort: 8080
+  selector:
+    io.kompose.service: workflow-api
+status:
+  loadBalancer: {}

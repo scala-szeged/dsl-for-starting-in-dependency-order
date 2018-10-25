@@ -1,0 +1,39 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jbpm-workbench
+  name: jbpm-workbench
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: jbpm-workbench
+    spec:
+      containers:
+      - env:
+        - name: TZ
+          value: Europe/Budapest
+        image: development.corvex.hu:5020/tm-jbpm-workbench:3
+        name: kie-wb
+        ports:
+        - containerPort: 8080
+        - containerPort: 8001
+        resources: {}
+        volumeMounts:
+        - mountPath: /opt/jboss/wildfly/git
+          name: gitdata
+      restartPolicy: Always
+      volumes:
+      - name: gitdata
+        persistentVolumeClaim:
+          claimName: gitdata
+status: {}

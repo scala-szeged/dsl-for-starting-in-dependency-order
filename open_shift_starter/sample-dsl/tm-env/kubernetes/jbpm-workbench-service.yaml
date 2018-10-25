@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: jbpm-workbench
+  name: jbpm-workbench
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  - name: "8001"
+    port: 8001
+    targetPort: 8001
+  selector:
+    io.kompose.service: jbpm-workbench
+status:
+  loadBalancer: {}

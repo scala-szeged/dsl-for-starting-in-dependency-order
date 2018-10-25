@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: messaging-server
+  name: messaging-server
+spec:
+  ports:
+  - name: "8280"
+    port: 8280
+    targetPort: 8080
+  selector:
+    io.kompose.service: messaging-server
+status:
+  loadBalancer: {}

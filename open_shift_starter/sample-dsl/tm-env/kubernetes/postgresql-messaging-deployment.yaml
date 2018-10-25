@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose-windows-amd64.exe convert -f ..\docker-compose.yml -f ..\docker-compose.openshift.yml
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgresql-messaging
+  name: postgresql-messaging
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: postgresql-messaging
+    spec:
+      containers:
+      - env:
+        - name: POSTGRESQL_DATABASE
+          value: messaging
+        - name: POSTGRESQL_PASSWORD
+          value: M3ss4g1ngUser
+        - name: POSTGRESQL_USER
+          value: messaging
+        image: centos/postgresql-96-centos7:9.6
+        name: postgresql-messaging
+        ports:
+        - containerPort: 5432
+        resources: {}
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: messaging-pgdata
+      restartPolicy: Always
+      volumes:
+      - name: messaging-pgdata
+        persistentVolumeClaim:
+          claimName: messaging-pgdata
+status: {}
