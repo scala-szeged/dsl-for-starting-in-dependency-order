@@ -1,4 +1,4 @@
-package hu.tigra.start.dependency
+package hu.tigra.start.dependencies
 
 import scala.util.parsing.combinator.JavaTokenParsers
 

@@ -1,2 +1,14 @@
 
 resource path: tm-env/kubernetes
+
+kieServerPostgre:
+kie-pgdata-persistentvolumeclaim.yaml
+postgresql-kie-deployment.yaml
+postgresql-kie-service.yaml
+
+kieServer:
+kie-server-deployment.yaml
+kie-server-service.yaml
+
+dependencies:
+kieServer depends on kieServerPostgre
