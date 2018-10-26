@@ -7,6 +7,9 @@ case class DependencyLine(what: String, dependsOnWhat: String)
 object StartDsl {
 
   def main(args: Array[String]): Unit = {
+
+    // It was 2 hours work to make the parser which recognizes the sample below,
+    // but does not do anything else.
     val test1 =
       """
         |resource path: tm-env/kubernetes
