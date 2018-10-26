@@ -1,6 +1,8 @@
 
 resource path: tm-env/kubernetes
 
+project name: sample-dsl-1
+
 kieServerPostgre:
 kie-pgdata-persistentvolumeclaim.yaml
 postgresql-kie-deployment.yaml
