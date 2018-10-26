@@ -5,6 +5,8 @@ name := "dsl-for-starting-in-dependency-order"
 organization in ThisBuild := "hu.tigra"
 scalaVersion in ThisBuild := "2.12.6"
 
+addCompilerPlugin(scalafixSemanticdb)
+
 // PROJECTS
 
 lazy val global = project
@@ -78,6 +80,10 @@ lazy val core_dsl_dependencies = Seq(
 lazy val settings = commonSettings
 
 lazy val compilerOptions = Seq(
+
+  "-Yrangepos",
+  "-Ywarn-unused",
+
   "-unchecked",
   "-feature",
   "-language:existentials",
