@@ -1,15 +1,33 @@
 package hu.tigra.start.dependencies
 
-import scala.util.parsing.combinator.JavaTokenParsers
 
+case class StartDslData(resourcePath: ResourcePath,
+                        projectName: ProjectName,
+                        items: List[Item],
+                        dependencies: List[DependencyLine],
+                        start: Start,
+                        watch: Watch) {
 
-case class DependencyLine(what: String, dependsOnWhat: String)
+  def iterateIt = items.flatMap(i =>
+    i.files.map(f => start.s.replaceAll("\\$item", i.name).replaceAll("\\$file", f))
+      ::: List(watch.s.replaceAll("\\$item", i.name))
+  )
+
+  override def toString: String =
+    Seq(resourcePath, projectName, items.mkString("\n"), dependencies.mkString("\n"), start, watch).mkString("\n")
+}
 
 case class ResourcePath(s: String)
 
 case class ProjectName(s: String)
 
 case class Item(name: String, files: List[String])
+
+case class DependencyLine(what: String, dependsOnWhat: String)
+
+case class Start(s: String)
+
+case class Watch(s: String)
 
 
 object StartDsl {
@@ -35,13 +53,36 @@ object StartDsl {
       |
       |dependencies:
       |kieServer depends on kieServerPostgre
+      |
+      |start:
+      |"echo start $item $file"
+      |
+      |watch:
+      |"echo watch $item
+      |sleep 2"
       |""".stripMargin
 
-    MyParser.parse(test1).foreach(println)
+    val result = MyParser.parse(test1).iterateIt
+    result.foreach(println)
+
+    import scala.sys.process._
+
+    https :// www.scala - lang.org / api / current / scala / sys / process / ProcessBuilder.html
+    result.foreach(_.!)
   }
 
   //noinspection TypeAnnotation
-  object MyParser extends JavaTokenParsers {
+  object MyParser extends ExtParsers {
+
+    def parse(s: String): StartDslData = parseAll(MyParser.dsl, s) match {
+      case Success(m, _) =>
+        m
+
+      case NoSuccess(msg, next) =>
+        println(msg)
+        println(next)
+        StartDslData(null, null, Nil, Nil, null, null)
+    }
 
     def resourcePath = "resource" ~ "path" ~ ":" ~> file ^^ {
       ResourcePath
@@ -57,27 +98,15 @@ object StartDsl {
       ProjectName
     }
 
-    def parse(s: String) = parseAll(MyParser.dsl, s) match {
-      case Success(m, _) =>
-        m
-
-      case NoSuccess(msg, next) =>
-        println(msg)
-        println(next)
-        Map()
+    def dsl = (resourcePath $ projectName $ rep1(itemWithFiles) $ dependencies $ start $ watch) ^^ {
+      case resourcePath $ projectName $ items $ dependencies $ start $ watch =>
+        StartDslData(resourcePath, projectName, items, dependencies, start, watch)
     }
 
-
-    def keywords = itemColon | dependenciesColon
-
-    def dsl = header ~ rep1(itemWithFiles) ~ dependencies ^^ {
-      case header ~ items ~ dependencies => Map(
-        header._1.getClass -> header._1,
-        header._2 -> header._2,
-        items.head.getClass -> items,
-        dependencies.head.getClass -> dependencies
-      )
+    def start = startColon ~ "\"" ~>"""[^"]+""".r <~ "\"" ^^ {
+      Start
     }
+
 
     def itemWithFiles = itemColon ~ rep1(file) ^^ {
       case name ~ files => Item(name, files)
@@ -97,6 +126,16 @@ object StartDsl {
     }
 
     def dependencies = dependenciesColon ~> rep1(dependencyLine)
+
+    def startColon = "start" ~ ":"
+
+    def watch = watchColon ~ "\"" ~>"""[^"]+""".r <~ "\"" ^^ {
+      Watch
+    }
+
+    def watchColon = "watch" ~ ":"
+
+    def keywords = itemColon | dependenciesColon | startColon | watchColon
   }
 
 }

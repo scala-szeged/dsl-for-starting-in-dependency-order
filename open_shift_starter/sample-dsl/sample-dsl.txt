@@ -14,3 +14,9 @@ kie-server-service.yaml
 
 dependencies:
 kieServer depends on kieServerPostgre
+
+start:
+"echo start $item-name"
+
+watch:
+"echo watch $item-name && sleep 2"
