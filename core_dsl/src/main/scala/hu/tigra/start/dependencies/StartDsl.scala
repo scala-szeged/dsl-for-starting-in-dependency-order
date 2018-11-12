@@ -8,7 +8,7 @@ case class StartDslData(resourcePath: ResourcePath,
                         start: Start,
                         watch: Watch) {
 
-  def iterateIt = items.flatMap(i =>
+  def commandList = items.flatMap(i =>
     i.files.map(f => start.s.replaceAll("\\$item", i.name).replaceAll("\\$file", f))
       ::: List(watch.s.replaceAll("\\$item", i.name))
   )
@@ -38,7 +38,7 @@ object StartDsl {
     // but does not do anything else.
     val test1 =
     """
-      |resource path: tm-env/kubernetes
+      |resource path: core_dsl/src
       |
       |project name: sample-dsl-1
       |
@@ -58,25 +58,28 @@ object StartDsl {
       |"echo start $item $file"
       |
       |watch:
-      |"echo watch $item
-      |sleep 2"
+      |"echo watch $item"
       |""".stripMargin
 
-    val result = MyParser.parse(test1).iterateIt
-    result.foreach(println)
+    println(test1)
 
-    import scala.sys.process._
+    val startDslData = MyParser.parse(test1)
+    startDslData.commandList.foreach(println)
+    //result.foreach(_.!)
 
-    https :// www.scala - lang.org / api / current / scala / sys / process / ProcessBuilder.html
-    result.foreach(_.!)
+    val basePath = os.Path(new java.io.File(startDslData.resourcePath.s).getCanonicalPath)
+    startDslData.commandList.foreach { cmd =>
+      val invoked = os.proc(cmd.split(" ")).call()
+      println(invoked.out.trim)
+    }
   }
 
   //noinspection TypeAnnotation
   object MyParser extends ExtParsers {
 
     def parse(s: String): StartDslData = parseAll(MyParser.dsl, s) match {
-      case Success(m, _) =>
-        m
+      case Success(startDslData, _) =>
+        startDslData
 
       case NoSuccess(msg, next) =>
         println(msg)
@@ -84,8 +87,8 @@ object StartDsl {
         StartDslData(null, null, Nil, Nil, null, null)
     }
 
-    def resourcePath = "resource" ~ "path" ~ ":" ~> file ^^ {
-      ResourcePath
+    def resourcePath = "resource" ~ "path" ~ ":" ~> log(file)("res p. file") ^^ {
+      f => ResourcePath(f)
     }
 
     def header = header1 | header2
@@ -95,7 +98,7 @@ object StartDsl {
     def header2 = projectName ~ resourcePath
 
     def projectName = "project" ~ "name" ~ ":" ~> "[a-z0-9-]+".r ^^ {
-      ProjectName
+      pn => ProjectName(pn)
     }
 
     def dsl = (resourcePath $ projectName $ rep1(itemWithFiles) $ dependencies $ start $ watch) ^^ {
@@ -104,7 +107,7 @@ object StartDsl {
     }
 
     def start = startColon ~ "\"" ~>"""[^"]+""".r <~ "\"" ^^ {
-      Start
+      cmd => Start(cmd)
     }
 
 
@@ -130,7 +133,7 @@ object StartDsl {
     def startColon = "start" ~ ":"
 
     def watch = watchColon ~ "\"" ~>"""[^"]+""".r <~ "\"" ^^ {
-      Watch
+      cmd => Watch(cmd)
     }
 
     def watchColon = "watch" ~ ":"

@@ -10,7 +10,7 @@ trait ExtParsers extends JavaTokenParsers {
     tp ~ tu ^^ { case x ~ y => $(x, y) } |
       tu ~ tp ^^ { case x ~ y => $(y, x) }
 
-  case class $[+a, +b](_1: a, _2: b)
+  case class $[+A, +B](_1: A, _2: B)
 
   implicit class ExtParser[+T](val parser: Parser[T]) {
     def $[U](tu: Parser[U]): Parser[$[T, U]] = unordered(parser, tu)

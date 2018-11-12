@@ -40,6 +40,7 @@ lazy val open_shift_starter = project
 lazy val dependencies =
   new {
     val combinatorParserV = "1.0.4"
+    val osLibV = "0.2.2"
 
     val logbackV = "1.2.3"
     val logstashV = "4.11"
@@ -54,6 +55,7 @@ lazy val dependencies =
 
 
     val combinatorParser = "org.scala-lang.modules" %% "scala-parser-combinators" % combinatorParserV
+    val osLib = "com.lihaoyi" %% "os-lib" % osLibV
 
     val logback = "ch.qos.logback" % "logback-classic" % logbackV
     val logstash = "net.logstash.logback" % "logstash-logback-encoder" % logstashV
@@ -70,6 +72,7 @@ lazy val dependencies =
 
 lazy val core_dsl_dependencies = Seq(
   dependencies.combinatorParser,
+  dependencies.osLib,
   dependencies.scalatest % "test",
   dependencies.scalacheck % "test"
 )
