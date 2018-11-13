@@ -87,7 +87,7 @@ object StartDsl {
         StartDslData(null, null, Nil, Nil, null, null)
     }
 
-    def resourcePath = "resource" ~ "path" ~ ":" ~> log(file)("res p. file") ^^ {
+    def resourcePath = "resource" ~ "path" ~ ":" ~> file ^^ {
       f => ResourcePath(f)
     }
 
